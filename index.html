@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>灵感生成器</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      background: linear-gradient(135deg, #6a11cb, #2575fc);
+      overflow-y: auto;
+      color: #fff;
+    }
+
+    .top-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      width: 90%;
+      margin-top: 20px;
+    }
+
+    .container {
+      text-align: center;
+      background: rgba(255, 255, 255, 0.8);
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+      width: 45%;
+      margin-bottom: 20px;
+      backdrop-filter: blur(10px);
+    }
+
+    .container h1 {
+      font-size: 2em;
+      color: #333;
+      margin-bottom: 20px;
+    }
+
+    .inspiration {
+      font-size: 1.4em;
+      line-height: 1.8;
+      color: #555;
+      padding: 10px 20px;
+      background: rgba(245, 245, 245, 0.9);
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+    }
+
+    .container button {
+      padding: 12px 25px;
+      font-size: 1em;
+      background: linear-gradient(135deg, #ff5722, #ff784e);
+      border: none;
+      border-radius: 8px;
+      color: white;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      width: 80%;
+      max-width: 200px;
+      margin-top: 20px;
+    }
+
+    /* 按钮悬停效果 */
+    .container button:hover {
+      background: linear-gradient(135deg, #ff784e, #ff3d00);
+      transform: scale(1.05);
+    }
+
+    /* 按钮点击效果 */
+    .container button:active {
+      transform: scale(0.95);
+      background: linear-gradient(135deg, #ff3d00, #ff5722);
+    }
+
+    .container select {
+      margin-top: 20px;
+      padding: 10px;
+      font-size: 1em;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      width: 80%;
+      max-width: 200px;
+      background: #fff;
+      color: #333;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .container select:hover {
+      border-color: #ff5722;
+      box-shadow: 0 2px 6px rgba(255, 87, 34, 0.5);
+    }
+
+    .right-panel {
+      text-align: center;
+      background: rgba(0, 0, 0, 0.6);
+      padding: 20px;
+      border-radius: 12px;
+      width: 45%;
+      max-height: 400px;
+      overflow-y: auto;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .module {
+      margin-top: 20px;
+      text-align: center;
+      background: rgba(255, 255, 255, 0.7);
+      padding: 20px;
+      border-radius: 10px;
+      width: 90%;
+      max-width: 800px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    h1, h2, h3 {
+      color: #ff5722;
+    }
+
+    .module h3 {
+      margin-bottom: 10px;
+    }
+
+    textarea {
+      width: 90%;
+      max-width: 600px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 10px;
+    }
+
+    /* 响应式设计 */
+    @media (max-width: 768px) {
+      .top-container {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .container, .right-panel {
+        width: 90%;
+      }
+
+      .container h1 {
+        font-size: 1.8em;
+      }
+
+      .inspiration {
+        font-size: 1.2em;
+      }
+
+      .container button {
+        font-size: 0.9em;
+        width: 100%;
+      }
+
+      .container select {
+        font-size: 0.9em;
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="top-container">
+    <div class="container">
+      <h1>灵感生成器</h1>
+      <div class="inspiration" id="inspiration">点击按钮获取灵感...</div>
+      <button id="generate-button" onclick="generateInspiration()">刷新灵感</button>
+      <select id="model-select">
+        <option value="" disabled selected>选择一个模型</option>
+        <option value="chatgpt">ChatGPT</option>
+        <option value="bard">Google Bard</option>
+        <option value="claude">Anthropic Claude</option>
+        <option value="ernie">百度文心一言</option>
+        <option value="llama">Meta LLaMA</option>
+        <option value="mistral">Mistral</option>
+        <option value="palm">Google PaLM</option>
+      </select>
+    </div>
+    <div class="right-panel">
+      <h2>灵感集</h2>
+      <ul id="fantasy-list">
+        <!-- 动态添加虚幻名词 -->
+      </ul>
+    </div>
+  </div>
+
+  <div class="module" id="share">
+    <h3>灵感分享</h3>
+    <textarea id="share-text" rows="4" placeholder="写下你的灵感..."></textarea><br><br>
+    <button onclick="shareInspiration()">分享灵感</button>
+  </div>
+
+  <script>
+    const inspirations = [
+      "想象你是一只鸟，从高空俯瞰一座城市，写下你的感受。",
+      "如果时间可以停止，你会用这段时间做些什么？",
+      "创造一个全新的节日，它将庆祝什么？",
+      "尝试将今天经历的一件小事写成一首诗。",
+      "假如你能和过去的自己对话，你会对他说什么？",
+      "发明一种新型交通工具，它如何改变人们的生活？",
+      "如果地球上的重力突然消失，世界会变成什么样？",
+    ];
+
+    function generateInspiration() {
+      const inspirationDiv = document.getElementById("inspiration");
+      const randomIndex = Math.floor(Math.random() * inspirations.length);
+      inspirationDiv.innerText = inspirations[randomIndex];
+    }
+
+    function loadFantasyWords() {
+      const fantasyWords = [
+        "星际雨", "梦境风暴", "时间碎片", "量子波动", "虚空漂流",
+        "深空漩涡", "无尽时光", "灵魂碎片", "虚拟迷雾", "暗影共鸣"
+      ];
+
+      const list = document.getElementById("fantasy-list");
+      fantasyWords.forEach(word => {
+        const listItem = document.createElement("li");
+        listItem.textContent = word;
+        listItem.onclick = () => {
+          document.getElementById("inspiration").innerText = `探索与"${word}"相关的灵感...`;
+        };
+        list.appendChild(listItem);
+      });
+    }
+
+    loadFantasyWords();
+  </script>
+</body>
+</html>
